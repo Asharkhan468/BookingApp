@@ -1,25 +1,43 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
-import { Text, TextInput, Button, ActivityIndicator, Snackbar } from 'react-native-paper';
+import {
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+} from 'react-native';
+import {
+  Text,
+  TextInput,
+  Button,
+  ActivityIndicator,
+  Snackbar,
+} from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import LinearGradient from 'react-native-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../App';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAuth } from '../../src/contexts/AuthContext';
 
-type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Login'>;
+type LoginScreenNavigationProp = StackNavigationProp<
+  RootStackParamList,
+  'Login'
+>;
 
 interface Props {
   navigation: LoginScreenNavigationProp;
 }
 
-export  function LoginScreen({ navigation }: Props): any {
+export function LoginScreen({ navigation }: Props): any {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
+  const { login } = useAuth();
 
   const handleLogin = async (): Promise<void> => {
     if (!email || !password) {
@@ -29,17 +47,19 @@ export  function LoginScreen({ navigation }: Props): any {
 
     setLoading(true);
     try {
-      await new Promise((resolve:any) => setTimeout(resolve, 1500));
-      
+      await new Promise((resolve: any) => setTimeout(resolve, 1500));
+
       // Demo credentials
       if (email === 'admin@bookease.com' && password === 'admin123') {
         await AsyncStorage.setItem('userToken', 'admin-token');
         await AsyncStorage.setItem('userRole', 'admin');
-        navigation.replace('Admin');
+
+        login('admin');
       } else if (email === 'user@bookease.com' && password === 'user123') {
         await AsyncStorage.setItem('userToken', 'user-token');
         await AsyncStorage.setItem('userRole', 'user');
-        navigation.replace('User');
+
+        login('user');
       } else {
         setError('Invalid credentials');
       }
@@ -50,90 +70,86 @@ export  function LoginScreen({ navigation }: Props): any {
     }
   };
 
-  const handleGoogleLogin = (): void => {
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      navigation.replace('User');
-    }, 1500);
-  };
-
   return (
-     <SafeAreaView style={{ flex: 1 }} edges={['top']}>
+    <SafeAreaView style={{ flex: 1 }} edges={['top']}>
       <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <LinearGradient colors={['#FF6B35', '#FF8C42']} style={styles.header}>
-          <Icon name="calendar-heart" size={60} color="#fff" />
-          <Text style={styles.appName}>BookEase</Text>
-          <Text style={styles.welcomeText}>Welcome Back!</Text>
-        </LinearGradient>
-
-        <View style={styles.formContainer}>
-          <TextInput
-            label="Email"
-            value={email}
-            onChangeText={setEmail}
-            mode="outlined"
-            style={styles.input}
-            left={<TextInput.Icon icon="email" />}
-            theme={{ colors: { primary: '#FF6B35' } }}
-            autoCapitalize="none"
-          />
-
-          <TextInput
-            label="Password"
-            value={password}
-            onChangeText={setPassword}
-            mode="outlined"
-            style={styles.input}
-            secureTextEntry={!showPassword}
-            left={<TextInput.Icon icon="lock" />}
-            right={<TextInput.Icon icon={showPassword ? 'eye-off' : 'eye'} onPress={() => setShowPassword(!showPassword)} />}
-            theme={{ colors: { primary: '#FF6B35' } }}
-          />
-
-          <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-            <Text style={styles.forgotPassword}>Forgot Password?</Text>
-          </TouchableOpacity>
-
-          <Button
-            mode="contained"
-            onPress={handleLogin}
-            style={styles.loginButton}
-            buttonColor="#FF6B35"
-            disabled={loading}
-          >
-            {loading ? <ActivityIndicator color="#fff" /> : 'Login'}
-          </Button>
-
-          <View style={styles.divider}>
-            <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>OR</Text>
-            <View style={styles.dividerLine} />
-          </View>
-
-        
-          <View style={styles.signupContainer}>
-            <Text style={styles.signupText}>Don't have an account? </Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-              <Text style={styles.signupLink}>Sign Up</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </ScrollView>
-
-      <Snackbar
-        visible={!!error}
-        onDismiss={() => setError('')}
-        duration={3000}
-        action={{ label: 'OK', onPress: () => setError('') }}
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        {error}
-      </Snackbar>
-    </KeyboardAvoidingView>
+        <ScrollView contentContainerStyle={styles.scrollContainer}>
+          <LinearGradient colors={['#FF6B35', '#FF8C42']} style={styles.header}>
+            <Icon name="calendar-heart" size={60} color="#fff" />
+            <Text style={styles.appName}>BookEase</Text>
+            <Text style={styles.welcomeText}>Welcome Back!</Text>
+          </LinearGradient>
+
+          <View style={styles.formContainer}>
+            <TextInput
+              label="Email"
+              value={email}
+              onChangeText={setEmail}
+              mode="outlined"
+              style={styles.input}
+              left={<TextInput.Icon icon="email" />}
+              theme={{ colors: { primary: '#FF6B35' } }}
+              autoCapitalize="none"
+            />
+
+            <TextInput
+              label="Password"
+              value={password}
+              onChangeText={setPassword}
+              mode="outlined"
+              style={styles.input}
+              secureTextEntry={!showPassword}
+              left={<TextInput.Icon icon="lock" />}
+              right={
+                <TextInput.Icon
+                  icon={showPassword ? 'eye-off' : 'eye'}
+                  onPress={() => setShowPassword(!showPassword)}
+                />
+              }
+              theme={{ colors: { primary: '#FF6B35' } }}
+            />
+
+            <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+              <Text style={styles.forgotPassword}>Forgot Password?</Text>
+            </TouchableOpacity>
+
+            <Button
+              mode="contained"
+              onPress={handleLogin}
+              style={styles.loginButton}
+              buttonColor="#FF6B35"
+              disabled={loading}
+            >
+              {loading ? <ActivityIndicator color="#fff" /> : 'Login'}
+            </Button>
+
+            <View style={styles.divider}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>OR</Text>
+              <View style={styles.dividerLine} />
+            </View>
+
+            <View style={styles.signupContainer}>
+              <Text style={styles.signupText}>Don't have an account? </Text>
+              <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+                <Text style={styles.signupLink}>Sign Up</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </ScrollView>
+
+        <Snackbar
+          visible={!!error}
+          onDismiss={() => setError('')}
+          duration={3000}
+          action={{ label: 'OK', onPress: () => setError('') }}
+        >
+          {error}
+        </Snackbar>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

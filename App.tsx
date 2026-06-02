@@ -22,6 +22,7 @@ import AIChatScreen from './src/screens/AIChatScreen';
 import { NotificationsScreen } from './src/screens/NotificationScreen';
 import CalendarScreen from './src/screens/CalendarScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
+import { AuthContext } from './src/contexts/AuthContext';
 
 // Admin Screens
 import AdminDashboard from './src/screens/admin/AdminDashboard';
@@ -96,6 +97,8 @@ const TabBarIcon = ({ focused, color, size, routeName }: any) => {
   }
   return <Icon name={iconName} size={size} color={color} />;
 };
+
+
 
 // User Bottom Tab Navigator with proper safe area
 function UserTabs(): any {
@@ -190,6 +193,13 @@ function AdminStack(): any {
           component={AutomationSettings}
           options={{ title: 'Automation Settings' }}
         />
+        <Stack.Screen
+          name="Login"
+          component={LoginScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
       </Stack.Navigator>
     </View>
   );
@@ -219,12 +229,31 @@ export default function App(): any {
     }
   };
 
+  const login = (role: string) => {
+  setIsLoggedIn(true);
+  setIsAdmin(role === 'admin');
+};
+
+
+
+  const logout = async () => {
+  try {
+    await AsyncStorage.removeItem('userToken');
+    await AsyncStorage.removeItem('userRole');
+
+    // setIsLoggedIn(false);
+    setIsAdmin(false);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <PaperProvider theme={theme}>
           <StatusBar barStyle="light-content" backgroundColor="#FF6B35" />
-          <NavigationContainer>
+          {/* <NavigationContainer>
             <Stack.Navigator screenOptions={{ headerShown: false }}>
               {!isLoggedIn ? (
                 <>
@@ -249,7 +278,35 @@ export default function App(): any {
                 </>
               )}
             </Stack.Navigator>
-          </NavigationContainer>
+          </NavigationContainer> */}
+          <AuthContext.Provider  value={{
+    login,
+    logout,
+  }}>
+  <NavigationContainer>
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      {!isLoggedIn ? (
+        <>
+          <Stack.Screen name="Splash" component={SplashScreen} />
+          <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+          <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="Register" component={RegisterScreen} />
+        </>
+      ) : isAdmin ? (
+        <Stack.Screen name="Admin" component={AdminStack} />
+      ) : (
+        <>
+          <Stack.Screen name="User" component={UserTabs} />
+          <Stack.Screen name="Booking" component={AppointmentBooking} />
+          <Stack.Screen
+            name="Notifications"
+            component={NotificationsScreen}
+          />
+        </>
+      )}
+    </Stack.Navigator>
+  </NavigationContainer>
+</AuthContext.Provider>
         </PaperProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>

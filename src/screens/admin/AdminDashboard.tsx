@@ -23,6 +23,8 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { AdminStackParamList } from '../../../App';
 import { DashboardStats } from '../../types';
 import { navigationRef } from '../../navigation/navigationRef';
+import { CommonActions } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width } = Dimensions.get('window');
 
@@ -115,13 +117,10 @@ export default function AdminDashboard({ navigation }: Props): any {
         {
           text: 'Logout',
           style: 'destructive',
-          onPress: () => {
-          navigationRef.current?.dispatch(
-    CommonActions.reset({
-      index: 0,
-      routes: [{ name: 'Login' }],
-    })
-  );
+          onPress: async () => {
+            await AsyncStorage.removeItem('userToken');
+            await AsyncStorage.removeItem('userRole');
+            navigation.navigate('Login');
           },
         },
       ],

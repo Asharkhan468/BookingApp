@@ -24,6 +24,7 @@ import { UserTabParamList, RootStackParamList } from '../../App';
 import { User, Appointment } from '../types';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { navigate } from '../navigation/navigationRef';
+import { useAuth } from '../../src/contexts/AuthContext';
 
 type ProfileScreenNavigationProp = CompositeNavigationProp<
   BottomTabNavigationProp<UserTabParamList, 'Profile'>,
@@ -48,25 +49,23 @@ export default function ProfileScreen({ navigation }: Props) {
     role: 'user',
     createdAt: new Date(),
   };
+  const { logout } = useAuth();
 
   const handleLogout = (): void => {
     Alert.alert('Logout', 'Are you sure you want to logout?', [
-      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Cancel',
+        style: 'cancel',
+      },
       {
         text: 'Logout',
         style: 'destructive',
         onPress: async () => {
-          setLoading(true);
-          await AsyncStorage.removeItem('userToken');
-          await AsyncStorage.removeItem('userRole');
-          navigation.replace('Login');
-          setLoading(false);
+          await logout();
         },
       },
     ]);
   };
-
-
 
   const MenuItem = ({
     icon,
@@ -178,7 +177,6 @@ export default function ProfileScreen({ navigation }: Props) {
       >
         <Card style={styles.menuCard}>
           <Card.Content>
-            
             <Divider style={styles.divider} />
 
             <ToggleMenuItem
