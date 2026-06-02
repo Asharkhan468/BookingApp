@@ -115,16 +115,7 @@ export  function LoginScreen({ navigation }: Props): any {
             <View style={styles.dividerLine} />
           </View>
 
-          <Button
-            mode="outlined"
-            onPress={handleGoogleLogin}
-            style={styles.googleButton}
-            icon="google"
-            textColor="#333"
-          >
-            Continue with Google
-          </Button>
-
+        
           <View style={styles.signupContainer}>
             <Text style={styles.signupText}>Don't have an account? </Text>
             <TouchableOpacity onPress={() => navigation.navigate('Register')}>

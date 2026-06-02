@@ -1,16 +1,35 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, Dimensions, TouchableOpacity } from 'react-native';
-import { Text, Card, ActivityIndicator, ProgressBar } from 'react-native-paper';
+import {
+  View,
+  StyleSheet,
+  ScrollView,
+  Dimensions,
+  TouchableOpacity,
+  Alert,
+} from 'react-native';
+import {
+  Text,
+  Card,
+  ActivityIndicator,
+  ProgressBar,
+  IconButton,
+  Menu,
+  Avatar,
+} from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import LinearGradient from 'react-native-linear-gradient';
 import { LineChart, PieChart } from 'react-native-chart-kit';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { AdminStackParamList } from '../../App';
-import { DashboardStats } from '../types';
+import { AdminStackParamList } from '../../../App';
+import { DashboardStats } from '../../types';
+import { navigationRef } from '../../navigation/navigationRef';
 
 const { width } = Dimensions.get('window');
 
-type AdminDashboardNavigationProp = StackNavigationProp<AdminStackParamList, 'AdminDashboard'>;
+type AdminDashboardNavigationProp = StackNavigationProp<
+  AdminStackParamList,
+  'AdminDashboard'
+>;
 
 interface Props {
   navigation: AdminDashboardNavigationProp;
@@ -24,7 +43,13 @@ interface StatCardProps {
   trend?: number;
 }
 
-const StatCard: React.FC<StatCardProps> = ({ title, value, icon, color, trend }) => (
+const StatCard: React.FC<StatCardProps> = ({
+  title,
+  value,
+  icon,
+  color,
+  trend,
+}) => (
   <Card style={styles.statCard}>
     <LinearGradient
       colors={[color, color + 'CC']}
@@ -37,7 +62,11 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, icon, color, trend })
           <Icon name={icon} size={30} color="#fff" />
           {trend !== undefined && (
             <View style={styles.trendContainer}>
-              <Icon name={trend >= 0 ? 'arrow-up' : 'arrow-down'} size={16} color="#fff" />
+              <Icon
+                name={trend >= 0 ? 'arrow-up' : 'arrow-down'}
+                size={16}
+                color="#fff"
+              />
               <Text style={styles.trendText}>{Math.abs(trend)}%</Text>
             </View>
           )}
@@ -49,8 +78,9 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, icon, color, trend })
   </Card>
 );
 
-export default function AdminDashboard({ navigation }: Props): JSX.Element {
+export default function AdminDashboard({ navigation }: Props): any {
   const [loading, setLoading] = useState<boolean>(true);
+  const [menuVisible, setMenuVisible] = useState<boolean>(false);
   const [stats, setStats] = useState<DashboardStats>({
     totalBookings: 0,
     revenue: 0,
@@ -63,7 +93,7 @@ export default function AdminDashboard({ navigation }: Props): JSX.Element {
   }, []);
 
   const loadDashboardData = async (): Promise<void> => {
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    await new Promise((resolve: any) => setTimeout(resolve, 1500));
     setStats({
       totalBookings: 245,
       revenue: 12580,
@@ -71,6 +101,32 @@ export default function AdminDashboard({ navigation }: Props): JSX.Element {
       pendingAppointments: 12,
     });
     setLoading(false);
+  };
+
+  const handleLogout = () => {
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to logout?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Logout',
+          style: 'destructive',
+          onPress: () => {
+          navigationRef.current?.dispatch(
+    CommonActions.reset({
+      index: 0,
+      routes: [{ name: 'Login' }],
+    })
+  );
+          },
+        },
+      ],
+      { cancelable: true },
+    );
   };
 
   const revenueData = {
@@ -133,72 +189,144 @@ export default function AdminDashboard({ navigation }: Props): JSX.Element {
   }
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Dashboard</Text>
-        <Text style={styles.headerSubtitle}>Welcome back, Admin</Text>
-      </View>
+    <>
+      <LinearGradient
+        colors={['#FF6B35', '#FF8C42']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={styles.headerGradient}
+      >
+        <View style={styles.headerContainer}>
+          <View style={styles.headerContent}>
+            <Text style={styles.headerTitle}>Dashboard</Text>
+            <Text style={styles.headerSubtitle}>Welcome back, Admin</Text>
+          </View>
 
-      {/* Stats Grid */}
-      <View style={styles.statsGrid}>
-        <StatCard title="Total Bookings" value={stats.totalBookings} icon="calendar-check" color="#FF6B35" trend={12} />
-        <StatCard title="Revenue" value={`$${stats.revenue}`} icon="currency-usd" color="#4CAF50" trend={8} />
-        <StatCard title="Active Customers" value={stats.activeCustomers} icon="account-group" color="#2196F3" trend={5} />
-        <StatCard title="Pending" value={stats.pendingAppointments} icon="clock-outline" color="#FF9800" trend={-3} />
-      </View>
-
-      {/* Revenue Chart */}
-      <Card style={styles.chartCard}>
-        <Card.Content>
-          <Text style={styles.chartTitle}>Revenue Overview</Text>
-          <Text style={styles.chartSubtitle}>Last 6 months</Text>
-          <LineChart
-            data={revenueData}
-            width={width - 60}
-            height={220}
-            chartConfig={chartConfig}
-            bezier
-            style={styles.chart}
-          />
-        </Card.Content>
-      </Card>
-
-      {/* Service Distribution */}
-      <Card style={styles.chartCard}>
-        <Card.Content>
-          <Text style={styles.chartTitle}>Service Distribution</Text>
-          <PieChart
-            data={pieData}
-            width={width - 60}
-            height={200}
-            chartConfig={chartConfig}
-            accessor="population"
-            backgroundColor="transparent"
-            paddingLeft="15"
-            absolute
-          />
-        </Card.Content>
-      </Card>
-
-      {/* Quick Actions */}
-      <View style={styles.quickActions}>
-        <Text style={styles.sectionTitle}>Quick Actions</Text>
-        <View style={styles.actionGrid}>
-          <TouchableOpacity style={styles.actionCard} onPress={() => navigation.navigate('ManageAppointments')}>
-            <Icon name="calendar-edit" size={40} color="#FF6B35" />
-            <Text style={styles.actionText}>Manage Bookings</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.actionCard} onPress={() => navigation.navigate('StaffManagement')}>
-            <Icon name="account-multiple" size={40} color="#4CAF50" />
-            <Text style={styles.actionText}>Staff Management</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.actionCard} onPress={() => navigation.navigate('AutomationSettings')}>
-            <Icon name="robot" size={40} color="#2196F3" />
-            <Text style={styles.actionText}>Automation</Text>
-          </TouchableOpacity>
+          {/* Professional Logout Button with Menu */}
+          <Menu
+            visible={menuVisible}
+            onDismiss={() => setMenuVisible(false)}
+            anchor={
+              <TouchableOpacity
+                style={styles.logoutButton}
+                onPress={handleLogout}
+                activeOpacity={0.8}
+              >
+                <LinearGradient
+                  colors={['rgba(255,255,255,0.2)', 'rgba(255,255,255,0.1)']}
+                  style={styles.logoutGradient}
+                >
+                  <Icon name="logout" size={22} color="#fff" />
+                  <Text style={styles.logoutText}>Logout</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            }
+            contentStyle={styles.menuContent}
+          ></Menu>
         </View>
-      </View>
-    </ScrollView>
+      </LinearGradient>
+
+      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+        {/* Stats Grid */}
+        <View style={styles.statsGrid}>
+          <StatCard
+            title="Total Bookings"
+            value={stats.totalBookings}
+            icon="calendar-check"
+            color="#FF6B35"
+            trend={12}
+          />
+          <StatCard
+            title="Revenue"
+            value={`$${stats.revenue}`}
+            icon="currency-usd"
+            color="#4CAF50"
+            trend={8}
+          />
+          <StatCard
+            title="Active Customers"
+            value={stats.activeCustomers}
+            icon="account-group"
+            color="#2196F3"
+            trend={5}
+          />
+          <StatCard
+            title="Pending"
+            value={stats.pendingAppointments}
+            icon="clock-outline"
+            color="#FF9800"
+            trend={-3}
+          />
+        </View>
+
+        {/* Revenue Chart */}
+        <Card style={styles.chartCard}>
+          <Card.Content>
+            <Text style={styles.chartTitle}>Revenue Overview</Text>
+            <Text style={styles.chartSubtitle}>Last 6 months</Text>
+
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <LineChart
+                data={revenueData}
+                width={Math.max(width, 600)}
+                height={220}
+                chartConfig={chartConfig}
+                bezier
+                withInnerLines={false}
+                withOuterLines={false}
+                withShadow={false}
+                style={styles.chart}
+              />
+            </ScrollView>
+          </Card.Content>
+        </Card>
+
+        {/* Service Distribution */}
+        <Card style={styles.chartCard}>
+          <Card.Content>
+            <Text style={styles.chartTitle}>Service Distribution</Text>
+            <PieChart
+              data={pieData}
+              width={width - 60}
+              height={200}
+              chartConfig={chartConfig}
+              accessor="population"
+              backgroundColor="transparent"
+              paddingLeft="15"
+              absolute
+            />
+          </Card.Content>
+        </Card>
+
+        {/* Quick Actions */}
+        <View style={styles.quickActions}>
+          <Text style={styles.sectionTitle}>Quick Actions</Text>
+          <View style={styles.actionGrid}>
+            <TouchableOpacity
+              style={styles.actionCard}
+              onPress={() => navigation.navigate('ManageAppointments')}
+            >
+              <Icon name="calendar-edit" size={40} color="#FF6B35" />
+              <Text style={styles.actionText}>Manage Bookings</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.actionCard}
+              onPress={() => navigation.navigate('StaffManagement')}
+            >
+              <Icon name="account-multiple" size={40} color="#4CAF50" />
+              <Text style={styles.actionText}>Staff Management</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.actionCard}
+              onPress={() => navigation.navigate('AutomationSettings')}
+            >
+              <Icon name="robot" size={40} color="#2196F3" />
+              <Text style={styles.actionText}>Automation</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </ScrollView>
+    </>
   );
 }
 
@@ -213,23 +341,73 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#f5f5f5',
   },
-  header: {
-    backgroundColor: '#fff',
-    paddingTop: 20,
+  headerGradient: {
+    borderBottomLeftRadius: 25,
+    borderBottomRightRadius: 25,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+  },
+  headerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 20,
     paddingHorizontal: 20,
-    paddingBottom: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+  },
+  headerContent: {
+    flexDirection: 'column',
   },
   headerTitle: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#fff',
   },
   headerSubtitle: {
     fontSize: 14,
-    color: '#666',
+    color: '#fff',
     marginTop: 5,
+    opacity: 0.9,
+  },
+  logoutButton: {
+    borderRadius: 30,
+    overflow: 'hidden',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  logoutGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 30,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.3)',
+  },
+  logoutText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+    marginLeft: 8,
+  },
+  menuContent: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+  },
+  menuItemText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#333',
   },
   statsGrid: {
     flexDirection: 'row',
@@ -294,8 +472,8 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   chart: {
-    marginLeft: -20,
-    borderRadius: 15,
+    borderRadius: 16,
+    alignSelf: 'center',
   },
   quickActions: {
     paddingHorizontal: 15,
