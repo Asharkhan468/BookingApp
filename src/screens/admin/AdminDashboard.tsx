@@ -22,8 +22,6 @@ import { LineChart, PieChart } from 'react-native-chart-kit';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { AdminStackParamList } from '../../../App';
 import { DashboardStats } from '../../types';
-import { navigationRef } from '../../navigation/navigationRef';
-import { CommonActions } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width } = Dimensions.get('window');
@@ -297,9 +295,9 @@ export default function AdminDashboard({ navigation }: Props): any {
           </Card.Content>
         </Card>
 
-        {/* Quick Actions */}
         <View style={styles.quickActions}>
           <Text style={styles.sectionTitle}>Quick Actions</Text>
+
           <View style={styles.actionGrid}>
             <TouchableOpacity
               style={styles.actionCard}
@@ -308,6 +306,7 @@ export default function AdminDashboard({ navigation }: Props): any {
               <Icon name="calendar-edit" size={40} color="#FF6B35" />
               <Text style={styles.actionText}>Manage Bookings</Text>
             </TouchableOpacity>
+
             <TouchableOpacity
               style={styles.actionCard}
               onPress={() => navigation.navigate('StaffManagement')}
@@ -315,12 +314,21 @@ export default function AdminDashboard({ navigation }: Props): any {
               <Icon name="account-multiple" size={40} color="#4CAF50" />
               <Text style={styles.actionText}>Staff Management</Text>
             </TouchableOpacity>
+
             <TouchableOpacity
               style={styles.actionCard}
               onPress={() => navigation.navigate('AutomationSettings')}
             >
               <Icon name="robot" size={40} color="#2196F3" />
               <Text style={styles.actionText}>Automation</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.actionCard}
+              onPress={() => navigation.navigate('AddServices')}
+            >
+              <Icon name="briefcase-plus" size={40} color="#9C27B0" />
+              <Text style={styles.actionText}>Add Services</Text>
             </TouchableOpacity>
           </View>
         </View>

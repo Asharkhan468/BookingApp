@@ -9,7 +9,7 @@ interface StaffWithAvailability extends Staff {
   availability: Availability[];
 }
 
-export default function StaffManagement(): JSX.Element {
+export default function StaffManagement(): any {
   const [staff, setStaff] = useState<StaffWithAvailability[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [modalVisible, setModalVisible] = useState<boolean>(false);
@@ -28,7 +28,7 @@ export default function StaffManagement(): JSX.Element {
   }, []);
 
   const loadStaff = async (): Promise<void> => {
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve:any) => setTimeout(resolve, 1000));
     const mockStaff: StaffWithAvailability[] = [
       {
         id: 1,

@@ -29,6 +29,7 @@ import AdminDashboard from './src/screens/admin/AdminDashboard';
 import ManageAppointments from './src/screens/admin/ManageAppointments';
 import StaffManagement from './src/screens/admin/StaffManagement';
 import AutomationSettings from './src/screens/admin/AutomationSettings';
+import AddService from './src/screens/admin/AddServices';
 
 export type RootStackParamList = {
   Splash: undefined;
@@ -43,6 +44,7 @@ export type RootStackParamList = {
   ManageAppointments: undefined;
   StaffManagement: undefined;
   AutomationSettings: undefined;
+  AddServices:undefined;
   BookingHistory: undefined;
 };
 
@@ -59,6 +61,7 @@ export type AdminStackParamList = {
   ManageAppointments: undefined;
   StaffManagement: undefined;
   AutomationSettings: undefined;
+  AddServices: undefined;
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -97,8 +100,6 @@ const TabBarIcon = ({ focused, color, size, routeName }: any) => {
   }
   return <Icon name={iconName} size={size} color={color} />;
 };
-
-
 
 // User Bottom Tab Navigator with proper safe area
 function UserTabs(): any {
@@ -194,6 +195,11 @@ function AdminStack(): any {
           options={{ title: 'Automation Settings' }}
         />
         <Stack.Screen
+          name="AddServices"
+          component={AddService}
+          options={{ title: 'Add Service' }}
+        />
+        <Stack.Screen
           name="Login"
           component={LoginScreen}
           options={{
@@ -230,23 +236,21 @@ export default function App(): any {
   };
 
   const login = (role: string) => {
-  setIsLoggedIn(true);
-  setIsAdmin(role === 'admin');
-};
-
-
+    setIsLoggedIn(true);
+    setIsAdmin(role === 'admin');
+  };
 
   const logout = async () => {
-  try {
-    await AsyncStorage.removeItem('userToken');
-    await AsyncStorage.removeItem('userRole');
+    try {
+      await AsyncStorage.removeItem('userToken');
+      await AsyncStorage.removeItem('userRole');
 
-    // setIsLoggedIn(false);
-    setIsAdmin(false);
-  } catch (error) {
-    console.log(error);
-  }
-};
+      // setIsLoggedIn(false);
+      setIsAdmin(false);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -279,34 +283,42 @@ export default function App(): any {
               )}
             </Stack.Navigator>
           </NavigationContainer> */}
-          <AuthContext.Provider  value={{
-    login,
-    logout,
-  }}>
-  <NavigationContainer>
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      {!isLoggedIn ? (
-        <>
-          <Stack.Screen name="Splash" component={SplashScreen} />
-          <Stack.Screen name="Onboarding" component={OnboardingScreen} />
-          <Stack.Screen name="Login" component={LoginScreen} />
-          <Stack.Screen name="Register" component={RegisterScreen} />
-        </>
-      ) : isAdmin ? (
-        <Stack.Screen name="Admin" component={AdminStack} />
-      ) : (
-        <>
-          <Stack.Screen name="User" component={UserTabs} />
-          <Stack.Screen name="Booking" component={AppointmentBooking} />
-          <Stack.Screen
-            name="Notifications"
-            component={NotificationsScreen}
-          />
-        </>
-      )}
-    </Stack.Navigator>
-  </NavigationContainer>
-</AuthContext.Provider>
+          <AuthContext.Provider
+            value={{
+              login,
+              logout,
+            }}
+          >
+            <NavigationContainer>
+              <Stack.Navigator screenOptions={{ headerShown: false }}>
+                {!isLoggedIn ? (
+                  <>
+                    <Stack.Screen name="Splash" component={SplashScreen} />
+                    <Stack.Screen
+                      name="Onboarding"
+                      component={OnboardingScreen}
+                    />
+                    <Stack.Screen name="Login" component={LoginScreen} />
+                    <Stack.Screen name="Register" component={RegisterScreen} />
+                  </>
+                ) : isAdmin ? (
+                  <Stack.Screen name="Admin" component={AdminStack} />
+                ) : (
+                  <>
+                    <Stack.Screen name="User" component={UserTabs} />
+                    <Stack.Screen
+                      name="Booking"
+                      component={AppointmentBooking}
+                    />
+                    <Stack.Screen
+                      name="Notifications"
+                      component={NotificationsScreen}
+                    />
+                  </>
+                )}
+              </Stack.Navigator>
+            </NavigationContainer>
+          </AuthContext.Provider>
         </PaperProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
